@@ -31,9 +31,9 @@ L'API respecte les principes **REST**, est sécurisée par **JWT** et entièreme
 
 ## 👤 Auteur
 
-| Nom | GitHub |
-|-----|--------|
-| **Yannis LEVY** | [@Lazimov](https://github.com/Lazimov) |
+| GitHub |
+|-------------|
+| [@Lazimov](https://github.com/Lazimov) |
 
 ---
 
