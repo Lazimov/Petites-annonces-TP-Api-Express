@@ -54,24 +54,94 @@ L'API respecte les principes **REST**, est sécurisée par **JWT** et entièreme
 
 ## 🗃️ Modèle de données
 
+### Diagramme UML
+
+```mermaid
+classDiagram
+    class User {
+        +int id
+        +string username
+        +string email
+        +string password
+        +enum role [user, admin]
+        +datetime createdAt
+        +datetime updatedAt
+        +validPassword(password) bool
+    }
+
+    class Annonce {
+        +int id
+        +string title
+        +text description
+        +decimal price
+        +string location
+        +enum status [active, sold, archived]
+        +int userId FK
+        +int categoryId FK
+        +datetime createdAt
+        +datetime updatedAt
+    }
+
+    class Category {
+        +int id
+        +string name
+        +text description
+        +datetime createdAt
+        +datetime updatedAt
+    }
+
+    User "1" --> "*" Annonce : publie
+    Category "1" --> "*" Annonce : contient
+```
+
+### Diagramme de séquence — Authentification
+
+```mermaid
+sequenceDiagram
+    actor U as Utilisateur
+    participant F as Front-end
+    participant A as API Express
+    participant DB as MySQL
+
+    U->>F: Remplit le formulaire d'inscription
+    F->>A: POST /api/auth/signup {username, email, password}
+    A->>A: Validation (express-validator)
+    A->>A: Hashage du mot de passe (bcrypt)
+    A->>DB: INSERT INTO users
+    DB-->>A: User créé
+    A->>A: Génération du token JWT
+    A-->>F: 201 {user, token}
+    F->>F: Stocke le token (localStorage)
+
+    U->>F: Crée une annonce
+    F->>A: POST /api/annonces + Bearer token
+    A->>A: Vérification JWT (middleware auth)
+    A->>DB: INSERT INTO annonces
+    DB-->>A: Annonce créée
+    A-->>F: 201 {annonce}
+    F->>F: Affiche la nouvelle annonce
+```
+
+### Schéma relationnel
+
 ```
 ┌──────────────┐       ┌──────────────────┐       ┌──────────────┐
 │     User     │       │     Annonce      │       │   Category   │
 ├──────────────┤       ├──────────────────┤       ├──────────────┤
-│ id           │──┐    │ id               │    ┌──│ id           │
+│ id       PK  │──┐    │ id           PK  │    ┌──│ id       PK  │
 │ username     │  │    │ title            │    │  │ name         │
 │ email        │  │    │ description      │    │  │ description  │
 │ password     │  ├───>│ price            │<───┘  │ createdAt    │
 │ role         │  │    │ location         │       │ updatedAt    │
 │ createdAt    │  │    │ status           │       └──────────────┘
-│ updatedAt    │  │    │ userId (FK)      │
-└──────────────┘  │    │ categoryId (FK)  │
+│ updatedAt    │  │    │ userId       FK  │
+└──────────────┘  │    │ categoryId   FK  │
                   │    │ createdAt        │
                   │    │ updatedAt        │
                   │    └──────────────────┘
                   │
-                  └── User hasMany Annonces
-                      Category hasMany Annonces
+                  └── 1-N : User hasMany Annonces
+                      1-N : Category hasMany Annonces
 ```
 
 ---
