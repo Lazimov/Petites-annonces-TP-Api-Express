@@ -83,10 +83,17 @@ cd petites-annonces
 
 # Installer les dépendances
 npm install
+```
 
-# Créer la base de données (phpMyAdmin ou CLI)
-# CREATE DATABASE petites_annonces;
+Ensuite, créer la base de données **`petites_annonces`** dans phpMyAdmin ou en CLI MySQL :
 
+```sql
+CREATE DATABASE petites_annonces CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+Puis lancer les migrations, seeders et le serveur :
+
+```bash
 # Lancer les migrations
 npx sequelize-cli db:migrate
 
