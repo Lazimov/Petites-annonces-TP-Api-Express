@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Petites Annonces</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #333;
+    }
+
+    /* ===== NAVBAR ===== */
+    nav {
+      background: #1a73e8;
+      color: white;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    nav .logo { font-size: 20px; font-weight: 700; }
+    nav .nav-links { display: flex; gap: 12px; align-items: center; }
+    nav .nav-links span { font-size: 14px; opacity: 0.9; }
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: #fff; color: #1a73e8; }
+    .btn-primary:hover { background: #e8f0fe; }
+    .btn-secondary { background: rgba(255,255,255,0.2); color: #fff; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.3); }
+    .btn-danger { background: #dc3545; color: #fff; }
+    .btn-danger:hover { background: #c82333; }
+    .btn-success { background: #28a745; color: #fff; }
+    .btn-success:hover { background: #218838; }
+    .btn-small { padding: 4px 10px; font-size: 12px; }
+
+    /* ===== CONTAINER ===== */
+    .container {
+      max-width: 1000px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: white;
+      border-radius: 12px;
+      padding: 32px;
+      width: 90%;
+      max-width: 440px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .modal h2 { margin-bottom: 20px; font-size: 22px; }
+    .modal .tabs { display: flex; gap: 0; margin-bottom: 20px; }
+    .modal .tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      border: none;
+      background: #f0f2f5;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .modal .tab:first-child { border-radius: 8px 0 0 8px; }
+    .modal .tab:last-child { border-radius: 0 8px 8px 0; }
+    .modal .tab.active { background: #1a73e8; color: white; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #555;
+    }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      outline: none;
+      border-color: #1a73e8;
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-actions { display: flex; gap: 8px; margin-top: 16px; }
+    .form-actions .btn { flex: 1; padding: 12px; }
+    .error-msg { color: #dc3545; font-size: 13px; margin-top: 8px; }
+    .success-msg { color: #28a745; font-size: 13px; margin-top: 8px; }
+
+    /* ===== FILTERS ===== */
+    .filters {
+      background: white;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .filters input, .filters select {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .filters input { flex: 1; min-width: 200px; }
+
+    /* ===== ANNONCES GRID ===== */
+    .annonces-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .annonces-header h1 { font-size: 24px; }
+    .annonces-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      transition: box-shadow 0.2s;
+    }
+    .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .card-title { font-size: 16px; font-weight: 600; color: #1a73e8; }
+    .card-price {
+      font-size: 18px;
+      font-weight: 700;
+      color: #28a745;
+      white-space: nowrap;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #888;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-active { background: #d4edda; color: #155724; }
+    .badge-sold { background: #f8d7da; color: #721c24; }
+    .badge-archived { background: #e2e3e5; color: #383d41; }
+    .badge-category { background: #e8f0fe; color: #1a73e8; }
+    .card-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: #888;
+    }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav>
+    <div class="logo">🏪 Petites Annonces</div>
+    <div class="nav-links">
+      <span id="navUser"></span>
+      <button class="btn btn-primary" id="btnAuth" onclick="showAuthModal()">Connexion</button>
+      <button class="btn btn-secondary" id="btnLogout" onclick="logout()" style="display:none">Déconnexion</button>
+    </div>
+  </nav>
+
+  <!-- CONTENT -->
+  <div class="container">
+    <!-- FILTERS -->
+    <div class="filters">
+      <input type="text" id="searchInput" placeholder="🔍 Rechercher une annonce..." oninput="loadAnnonces()">
+      <select id="categoryFilter" onchange="loadAnnonces()">
+        <option value="">Toutes les catégories</option>
+      </select>
+      <select id="statusFilter" onchange="loadAnnonces()">
+        <option value="">Tous les statuts</option>
+        <option value="active">Active</option>
+        <option value="sold">Vendu</option>
+        <option value="archived">Archivé</option>
+      </select>
+    </div>
+
+    <!-- HEADER -->
+    <div class="annonces-header">
+      <h1>📋 Annonces</h1>
+      <button class="btn btn-success" id="btnNewAnnonce" onclick="showAnnonceModal()" style="display:none">+ Nouvelle annonce</button>
+    </div>
+
+    <!-- GRID -->
+    <div class="annonces-grid" id="annoncesGrid"></div>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal">
+      <div class="tabs">
+        <button class="tab active" onclick="switchAuthTab('login')">Connexion</button>
+        <button class="tab" onclick="switchAuthTab('signup')">Inscription</button>
+      </div>
+      <!-- LOGIN FORM -->
+      <div id="loginForm">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="votre@email.com">
+        </div>
+        <div class="form-group">
+          <label>Mot de passe</label>
+          <input type="password" id="loginPassword" placeholder="••••••">
+        </div>
+        <div id="loginMsg"></div>
+        <div class="form-actions">
+          <button class="btn btn-secondary" onclick="closeModals()">Annuler</button>
+          <button class="btn btn-success" onclick="login()">Se connecter</button>
+        </div>
+      </div>
+      <!-- SIGNUP FORM -->
+      <div id="signupForm" style="display:none">
+        <div class="form-group">
+          <label>Nom d'utilisateur</label>
+          <input type="text" id="signupUsername" placeholder="mon_pseudo">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="signupEmail" placeholder="votre@email.com">
+        </div>
+        <div class="form-group">
+          <label>Mot de passe</label>
+          <input type="password" id="signupPassword" placeholder="6 caractères minimum">
+        </div>
+        <div id="signupMsg"></div>
+        <div class="form-actions">
+          <button class="btn btn-secondary" onclick="closeModals()">Annuler</button>
+          <button class="btn btn-success" onclick="signup()">S'inscrire</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANNONCE MODAL -->
+  <div class="modal-overlay" id="annonceModal">
+    <div class="modal">
+      <h2 id="annonceModalTitle">Nouvelle annonce</h2>
+      <div class="form-group">
+        <label>Titre</label>
+        <input type="text" id="annonceTitle" placeholder="Titre de l'annonce">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="annonceDesc" placeholder="Décrivez votre article..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Prix (€)</label>
+        <input type="number" id="annoncePrice" placeholder="0.00" step="0.01" min="0">
+      </div>
+      <div class="form-group">
+        <label>Localisation</label>
+        <input type="text" id="annonceLocation" placeholder="Ville, code postal">
+      </div>
+      <div class="form-group">
+        <label>Catégorie</label>
+        <select id="annonceCategory"></select>
+      </div>
+      <div class="form-group" id="annonceStatusGroup" style="display:none">
+        <label>Statut</label>
+        <select id="annonceStatus">
+          <option value="active">Active</option>
+          <option value="sold">Vendu</option>
+          <option value="archived">Archivé</option>
+        </select>
+      </div>
+      <div id="annonceMsg"></div>
+      <div class="form-actions">
+        <button class="btn btn-secondary" onclick="closeModals()">Annuler</button>
+        <button class="btn btn-success" id="annonceSubmitBtn" onclick="submitAnnonce()">Publier</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== STATE =====
+    const API = '/api';
+    let token = localStorage.getItem('token') || null;
+    let currentUser = null;
+    let editingAnnonceId = null;
+    let categories = [];
+
+    // ===== INIT =====
+    document.addEventListener('DOMContentLoaded', () => {
+      if (token) loadProfile();
+      loadCategories();
+      loadAnnonces();
+    });
+
+    // ===== AUTH =====
+    function showAuthModal() {
+      document.getElementById('authModal').classList.add('active');
+    }
+
+    function closeModals() {
+      document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+      editingAnnonceId = null;
+    }
+
+    function switchAuthTab(tab) {
+      const tabs = document.querySelectorAll('.modal .tab');
+      tabs.forEach(t => t.classList.remove('active'));
+      if (tab === 'login') {
+        tabs[0].classList.add('active');
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('signupForm').style.display = 'none';
+      } else {
+        tabs[1].classList.add('active');
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('signupForm').style.display = 'block';
+      }
+    }
+
+    async function login() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      const msgEl = document.getElementById('loginMsg');
+      try {
+        const res = await fetch(`${API}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.details?.[0]?.msg || 'Erreur');
+        token = data.token;
+        localStorage.setItem('token', token);
+        currentUser = data.user;
+        updateUI();
+        closeModals();
+        loadAnnonces();
+      } catch (e) {
+        msgEl.innerHTML = `<div class="error-msg">${e.message}</div>`;
+      }
+    }
+
+    async function signup() {
+      const username = document.getElementById('signupUsername').value;
+      const email = document.getElementById('signupEmail').value;
+      const password = document.getElementById('signupPassword').value;
+      const msgEl = document.getElementById('signupMsg');
+      try {
+        const res = await fetch(`${API}/auth/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.details?.[0]?.msg || 'Erreur');
+        token = data.token;
+        localStorage.setItem('token', token);
+        currentUser = data.user;
+        updateUI();
+        closeModals();
+        loadAnnonces();
+      } catch (e) {
+        msgEl.innerHTML = `<div class="error-msg">${e.message}</div>`;
+      }
+    }
+
+    async function loadProfile() {
+      try {
+        const res = await fetch(`${API}/auth/profile`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        currentUser = data.user;
+        updateUI();
+      } catch {
+        logout();
+      }
+    }
+
+    function logout() {
+      token = null;
+      currentUser = null;
+      localStorage.removeItem('token');
+      updateUI();
+      loadAnnonces();
+    }
+
+    function updateUI() {
+      const navUser = document.getElementById('navUser');
+      const btnAuth = document.getElementById('btnAuth');
+      const btnLogout = document.getElementById('btnLogout');
+      const btnNew = document.getElementById('btnNewAnnonce');
+
+      if (currentUser) {
+        navUser.textContent = `👤 ${currentUser.username}`;
+        btnAuth.style.display = 'none';
+        btnLogout.style.display = 'inline-block';
+        btnNew.style.display = 'inline-block';
+      } else {
+        navUser.textContent = '';
+        btnAuth.style.display = 'inline-block';
+        btnLogout.style.display = 'none';
+        btnNew.style.display = 'none';
+      }
+    }
+
+    // ===== CATEGORIES =====
+    async function loadCategories() {
+      try {
+        const res = await fetch(`${API}/categories`);
+        const data = await res.json();
+        categories = data.categories || [];
+
+        // Filter dropdown
+        const filterSelect = document.getElementById('categoryFilter');
+        filterSelect.innerHTML = '<option value="">Toutes les catégories</option>';
+        categories.forEach(c => {
+          filterSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+        });
+
+        // Annonce form dropdown
+        const formSelect = document.getElementById('annonceCategory');
+        formSelect.innerHTML = '<option value="">-- Choisir --</option>';
+        categories.forEach(c => {
+          formSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+        });
+      } catch (e) {
+        console.error('Erreur chargement catégories:', e);
+      }
+    }
+
+    // ===== ANNONCES =====
+    async function loadAnnonces() {
+      const search = document.getElementById('searchInput').value;
+      const categoryId = document.getElementById('categoryFilter').value;
+      const status = document.getElementById('statusFilter').value;
+
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      if (categoryId) params.set('categoryId', categoryId);
+      if (status) params.set('status', status);
+
+      try {
+        const res = await fetch(`${API}/annonces?${params}`);
+        const data = await res.json();
+        renderAnnonces(data.annonces || []);
+      } catch (e) {
+        console.error('Erreur chargement annonces:', e);
+      }
+    }
+
+    function renderAnnonces(annonces) {
+      const grid = document.getElementById('annoncesGrid');
+      if (annonces.length === 0) {
+        grid.innerHTML = `
+          <div class="empty" style="grid-column: 1/-1">
+            <div class="empty-icon">📭</div>
+            <p>Aucune annonce trouvée</p>
+          </div>`;
+        return;
+      }
+
+      grid.innerHTML = annonces.map(a => {
+        const statusClass = a.status === 'active' ? 'badge-active' : a.status === 'sold' ? 'badge-sold' : 'badge-archived';
+        const statusLabel = a.status === 'active' ? 'Active' : a.status === 'sold' ? 'Vendu' : 'Archivé';
+        const isOwner = currentUser && currentUser.id === a.userId;
+        const isAdmin = currentUser && currentUser.role === 'admin';
+        const date = new Date(a.createdAt).toLocaleDateString('fr-FR');
+
+        return `
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">${escapeHtml(a.title)}</div>
+              <div class="card-price">${parseFloat(a.price).toFixed(2)} €</div>
+            </div>
+            <div class="card-desc">${escapeHtml(a.description)}</div>
+            <div class="card-meta">
+              <span>👤 ${a.user ? escapeHtml(a.user.username) : 'Inconnu'}</span>
+              ${a.category ? `<span class="badge badge-category">${escapeHtml(a.category.name)}</span>` : ''}
+              <span class="badge ${statusClass}">${statusLabel}</span>
+              ${a.location ? `<span>📍 ${escapeHtml(a.location)}</span>` : ''}
+              <span>📅 ${date}</span>
+            </div>
+            ${(isOwner || isAdmin) ? `
+              <div class="card-actions">
+                ${isOwner ? `<button class="btn btn-primary btn-small" onclick="editAnnonce(${a.id})">✏️ Modifier</button>` : ''}
+                <button class="btn btn-danger btn-small" onclick="deleteAnnonce(${a.id})">🗑️ Supprimer</button>
+              </div>
+            ` : ''}
+          </div>`;
+      }).join('');
+    }
+
+    // ===== ANNONCE CRUD =====
+    function showAnnonceModal() {
+      editingAnnonceId = null;
+      document.getElementById('annonceModalTitle').textContent = 'Nouvelle annonce';
+      document.getElementById('annonceSubmitBtn').textContent = 'Publier';
+      document.getElementById('annonceTitle').value = '';
+      document.getElementById('annonceDesc').value = '';
+      document.getElementById('annoncePrice').value = '';
+      document.getElementById('annonceLocation').value = '';
+      document.getElementById('annonceCategory').value = '';
+      document.getElementById('annonceStatus').value = 'active';
+      document.getElementById('annonceStatusGroup').style.display = 'none';
+      document.getElementById('annonceMsg').innerHTML = '';
+      document.getElementById('annonceModal').classList.add('active');
+    }
+
+    async function editAnnonce(id) {
+      try {
+        const res = await fetch(`${API}/annonces/${id}`);
+        const data = await res.json();
+        const a = data.annonce;
+
+        editingAnnonceId = id;
+        document.getElementById('annonceModalTitle').textContent = 'Modifier l\'annonce';
+        document.getElementById('annonceSubmitBtn').textContent = 'Enregistrer';
+        document.getElementById('annonceTitle').value = a.title;
+        document.getElementById('annonceDesc').value = a.description;
+        document.getElementById('annoncePrice').value = a.price;
+        document.getElementById('annonceLocation').value = a.location || '';
+        document.getElementById('annonceCategory').value = a.categoryId || '';
+        document.getElementById('annonceStatus').value = a.status;
+        document.getElementById('annonceStatusGroup').style.display = 'block';
+        document.getElementById('annonceMsg').innerHTML = '';
+        document.getElementById('annonceModal').classList.add('active');
+      } catch (e) {
+        alert('Erreur lors du chargement de l\'annonce.');
+      }
+    }
+
+    async function submitAnnonce() {
+      const body = {
+        title: document.getElementById('annonceTitle').value,
+        description: document.getElementById('annonceDesc').value,
+        price: parseFloat(document.getElementById('annoncePrice').value),
+        location: document.getElementById('annonceLocation').value || undefined,
+        categoryId: document.getElementById('annonceCategory').value ? parseInt(document.getElementById('annonceCategory').value) : undefined,
+      };
+      if (editingAnnonceId) {
+        body.status = document.getElementById('annonceStatus').value;
+      }
+
+      const msgEl = document.getElementById('annonceMsg');
+      const url = editingAnnonceId ? `${API}/annonces/${editingAnnonceId}` : `${API}/annonces`;
+      const method = editingAnnonceId ? 'PUT' : 'POST';
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.details?.[0]?.msg || 'Erreur');
+        closeModals();
+        loadAnnonces();
+      } catch (e) {
+        msgEl.innerHTML = `<div class="error-msg">${e.message}</div>`;
+      }
+    }
+
+    async function deleteAnnonce(id) {
+      if (!confirm('Êtes-vous sûr de vouloir supprimer cette annonce ?')) return;
+      try {
+        const res = await fetch(`${API}/annonces/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || 'Erreur');
+        }
+        loadAnnonces();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    // ===== UTILS =====
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Fermer modals en cliquant dehors
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModals();
+      });
+    });
+  </script>
+</body>
+</html>
