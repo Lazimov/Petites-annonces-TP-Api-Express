@@ -56,9 +56,8 @@ L'API respecte les principes **REST**, est sécurisée par **JWT** et entièreme
 
 ### Diagramme de classes UML
 
-![Diagramme de classes](https://www.plantuml.com/plantuml/png/~1fPHHRzem58NVyokkyWGRL529bwf2pMYwPHkKGQZsLXdx3hmwTcGxhLZ5VzyDpP11ObKtFpavtxMFZszovJoplYfKv1waBfbb1N35d4kyjt9PUSouqNFv2w5tZDmOxUT-en2MHeb0BHb_O2jyqInop_HAOG2uDHFcIUeL_63AXOgI6lscH33MhqqKDKj1F4KlFJf8j3QQrvDf5iDp506DdHrOEBJq1fhH1IdW0h99ddvCPt1vEVqo70PgHRXc1H9pbyn6dv9PQz1h4xUOPDyMwG6B1PCg0FkzKsH9JfwC5G5yFXYq0y8QLU-PJXPZUAvDT829Gkfjm72BpAD8F87NIPxcsJWDhPVYj7n_lv--XqUcf9Wsdbf_pBMfxeCX7qm7h3UVvxUJLYtUBd_IjUsqRHXna_uRKgPRKs74VSeua0KwRcNffT44vUdtFCpIIbxNNgUZR9nyfTGxvs6nCfmrbU7510Hrjw_SFct6lNp43ZZgLqhTyZKzYkrHKsI71xevF11jYIjZDwzG_tY11scFcgtU4FTHGv_kqxy6_v_kTnzYt8-Xsnr2t3ixUnVlE-S2ocgf9CABcVqHJ-Bq-_4IjQS2MluAjQ2_rMy0)
+<img width="607" height="528" alt="image" src="https://github.com/user-attachments/assets/1d624087-f8dc-43c4-aa61-dc550d14d9f4" />
 
-<details>
 <summary>📝 Code source PlantUML</summary>
 
 ```plantuml
