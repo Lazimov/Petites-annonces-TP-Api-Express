@@ -58,115 +58,12 @@ L'API respecte les principes **REST**, est sécurisée par **JWT** et entièreme
 
 <img width="607" height="528" alt="image" src="https://github.com/user-attachments/assets/1d624087-f8dc-43c4-aa61-dc550d14d9f4" />
 
-<summary>📝 Code source PlantUML</summary>
 
-```plantuml
-@startuml
-skinparam classAttributeIconSize 0
-skinparam classFontStyle bold
-skinparam packageStyle rectangle
-skinparam shadowing false
-skinparam linetype ortho
-
-package "Petites Annonces API" {
-
-    class User {
-        - id : INTEGER <<PK>>
-        - username : VARCHAR(50) <<UNIQUE>>
-        - email : VARCHAR(100) <<UNIQUE>>
-        - password : VARCHAR(255)
-        - role : ENUM {user, admin}
-        - createdAt : DATETIME
-        - updatedAt : DATETIME
-        __
-        + validPassword(password) : Boolean
-        + toJSON() : Object
-    }
-
-    class Annonce {
-        - id : INTEGER <<PK>>
-        - title : VARCHAR(150)
-        - description : TEXT
-        - price : DECIMAL(10,2)
-        - location : VARCHAR(100)
-        - status : ENUM {active, sold, archived}
-        - userId : INTEGER <<FK>>
-        - categoryId : INTEGER <<FK>>
-        - createdAt : DATETIME
-        - updatedAt : DATETIME
-    }
-
-    class Category {
-        - id : INTEGER <<PK>>
-        - name : VARCHAR(100) <<UNIQUE>>
-        - description : TEXT
-        - createdAt : DATETIME
-        - updatedAt : DATETIME
-    }
-
-    User "1" --> "0..*" Annonce : publie >
-    Category "1" --> "0..*" Annonce : contient >
-}
-
-@enduml
-```
-
-</details>
 
 ### Diagramme de séquence — Inscription & Création d'annonce
 
-![Diagramme de séquence](https://www.plantuml.com/plantuml/png/~1XPHBJ-Cm58Nt_XLNR4XB7y0IgJEaq8eY2aoJ3XisRdpRcZfsi9sM2l7Vnyw3XX6ZsIIAx-Tphy-nScairJPF1J4RBZEgQGfcJPdQSRc29HK6cnLypL4c66gjTl6Q9nk9ni1v0t5FonEUKMaVAMDUvVoK49fOfM5kkU26MimrK0Dpqg3XQAoLj5sKx5a6D_7qhdyRjOuyD_xAXOyJ6BrbshLsvBrYs7in9Hb-9QUSCO4xgj61DBVhJt3w5OnGRtbIKzLNIKQ4KKiNrA3JsqU_xehLwo4XWm5Cf4aqponN4WO3GkRG_G5Zk80PffdW5fPAfxcWN2Fm0ql6dWiTz_WGnT2d6U_xndt3LpBFdkLxRb1Bcc87CALST9olnkoKPXyahFV-feAxsPoUcnjBGxhRSb7fLWb63YnLWuLY-nQ9_Ehrq2r7exlHLGnj6CyUfk0xEZ-VRaQpKTaK1l2JEB9RoSXS20WODvcIV26mqlAbHQBtcUsjgLa7zQGTE3jjjflSHwDPx5xnGzcigJrt2v1en8Fcoyxs_EJ1EsUVDcWbyADGhKmedEg0LHkKXJTL0Ets-UbPk_rNVLpd8rH2HUHieYli6RGJYsbmN537hIBQAus5jy2EgPJAtVh_9bnntwPRbfp19t23bA6-W26wYwdBqSgmfZvLr7p9axBtxLDCfdN56xBrrNrGx6dvKjL9uslFdzHbLjXL-7Iu0Oa_31Ote5EOFs7_YgQUj9bEM1dW0yA6-RKn0TrYKkZ22RZHSQNqllLT6jMEHXBXqfrsZI1LlaKX3YwII_ShS7-cFm00)
+<img width="958" height="1092" alt="image" src="https://github.com/user-attachments/assets/f35662ec-f6e6-4d9c-a59b-12926627c300" />
 
-<details>
-<summary>📝 Code source PlantUML</summary>
-
-```plantuml
-@startuml
-skinparam shadowing false
-skinparam sequenceArrowThickness 2
-skinparam participantPadding 20
-
-actor Utilisateur as U
-participant "Front-end\n(HTML/JS)" as F
-participant "API Express\n(Node.js)" as A
-participant "Middleware\n(auth.js)" as M
-participant "Service\n(authService)" as S
-database "MySQL" as DB
-
-== Inscription ==
-
-U -> F : Remplit formulaire inscription
-F -> A : POST /api/auth/signup\n{username, email, password}
-A -> A : Validation\n(express-validator)
-A -> S : signup(body)
-S -> DB : SELECT * FROM users\nWHERE email = ?
-DB --> S : null (disponible)
-S -> S : bcrypt.hash(password, 10)
-S -> DB : INSERT INTO users
-DB --> S : User créé
-S -> S : jwt.sign({id, email, role})
-S --> A : {user, token}
-A --> F : **201** {user, token}
-F -> F : localStorage.setItem('token')
-
-== Création d'annonce ==
-
-U -> F : Remplit formulaire annonce
-F -> A : POST /api/annonces\n+ Header: Bearer <token>
-A -> M : Vérification JWT
-M -> M : jwt.verify(token)
-M --> A : req.user = {id, role}
-A -> S : create(body, userId)
-S -> DB : INSERT INTO annonces
-DB --> S : Annonce créée
-S --> A : annonce (avec user + category)
-A --> F : **201** {annonce}
-F -> F : Affiche nouvelle annonce
-
-@enduml
-```
-
-</details>
 
 ---
 
