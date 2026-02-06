@@ -54,95 +54,120 @@ L'API respecte les principes **REST**, est sécurisée par **JWT** et entièreme
 
 ## 🗃️ Modèle de données
 
-### Diagramme UML
+### Diagramme de classes UML
 
-```mermaid
-classDiagram
+![Diagramme de classes](https://www.plantuml.com/plantuml/png/ZLF1Rjim3BthAmYVacW3jcsaKYW0YL4a0jIbsacIIMavP2n9MPBwxqpRLQMMjLPqPVVUpEVn9bfCqsiAOmDf2laY2v8BSv4FLqSWjMM0n78mIamXdwOEDmB7JKkK3kCMSz-K-03QFi6GGKr03zKK3M-L1F5ZJ9K6LJZYfCo8fUGaxG95jyG4x2uad2fXoU1k3R0TvLfDSXhfbT9NbWU2pQsC7pu-LaPB5D3KeqLiDHO9h5BJ0xSW4pMB95BCN9tHnSCqkWCkLKPPa3VavQiHUuGJfAqbH0dkC0i7qCXMPVSEgkwfS7IRNj-zMDtqEZPxkpRy-hxmTwTcpv-R_xzFhsV-2tBWx_t_0a-yl-6NtnVlq6QDqFNmss2lEhFwVlAVHqWkQF0LoRz_dpF4LkCTJUbVpZq_CZjDWkB-JNu1)
+
+<details>
+<summary>📝 Code source PlantUML</summary>
+
+```plantuml
+@startuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle bold
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam linetype ortho
+
+package "Petites Annonces API" {
+
     class User {
-        +int id
-        +string username
-        +string email
-        +string password
-        +enum role [user, admin]
-        +datetime createdAt
-        +datetime updatedAt
-        +validPassword(password) bool
+        - id : INTEGER <<PK>>
+        - username : VARCHAR(50) <<UNIQUE>>
+        - email : VARCHAR(100) <<UNIQUE>>
+        - password : VARCHAR(255)
+        - role : ENUM {user, admin}
+        - createdAt : DATETIME
+        - updatedAt : DATETIME
+        __
+        + validPassword(password) : Boolean
+        + toJSON() : Object
     }
 
     class Annonce {
-        +int id
-        +string title
-        +text description
-        +decimal price
-        +string location
-        +enum status [active, sold, archived]
-        +int userId FK
-        +int categoryId FK
-        +datetime createdAt
-        +datetime updatedAt
+        - id : INTEGER <<PK>>
+        - title : VARCHAR(150)
+        - description : TEXT
+        - price : DECIMAL(10,2)
+        - location : VARCHAR(100)
+        - status : ENUM {active, sold, archived}
+        - userId : INTEGER <<FK>>
+        - categoryId : INTEGER <<FK>>
+        - createdAt : DATETIME
+        - updatedAt : DATETIME
     }
 
     class Category {
-        +int id
-        +string name
-        +text description
-        +datetime createdAt
-        +datetime updatedAt
+        - id : INTEGER <<PK>>
+        - name : VARCHAR(100) <<UNIQUE>>
+        - description : TEXT
+        - createdAt : DATETIME
+        - updatedAt : DATETIME
     }
 
-    User "1" --> "*" Annonce : publie
-    Category "1" --> "*" Annonce : contient
+    User "1" --> "0..*" Annonce : publie >
+    Category "1" --> "0..*" Annonce : contient >
+}
+
+@enduml
 ```
 
-### Diagramme de séquence — Authentification
+</details>
 
-```mermaid
-sequenceDiagram
-    actor U as Utilisateur
-    participant F as Front-end
-    participant A as API Express
-    participant DB as MySQL
+### Diagramme de séquence — Inscription & Création d'annonce
 
-    U->>F: Remplit le formulaire d'inscription
-    F->>A: POST /api/auth/signup {username, email, password}
-    A->>A: Validation (express-validator)
-    A->>A: Hashage du mot de passe (bcrypt)
-    A->>DB: INSERT INTO users
-    DB-->>A: User créé
-    A->>A: Génération du token JWT
-    A-->>F: 201 {user, token}
-    F->>F: Stocke le token (localStorage)
+![Diagramme de séquence](https://www.plantuml.com/plantuml/png/ZLHDRzim3BthLn3eMGVs01tiW8KNL0b0jYDUqQocsMsPaIEabs7_trCIfKceB0BpFNapysQzLDROXMOi2d80F8fGXRQu0HQJM887Bi6e2KKmImWr5UO2Lw5v4hOCXLn2ra5fHb89IK3S09Hi1Ds2WCqOmq4r5WJfXKSq8sK5s5e5b3C1GGMI4ne64F0EaB32c82OYOAWm78O5sA2Y4L4bA3u4rG3y7S7WYwNiGBD-65oMB7Q37z8d8sOE2f3rK49KYH0-3CW-mI20X8U4D1sXc4f9c6hCCqH8dq1V0o7m0Qr6K3Pv93L8_mGZ1w9lOeO_TI7rdtGmtNq5sStjlnlBxJaKRPb5m-_t-R_BrqS-dyV-VYnrltzFpvxrVfCPLfvVDlBxhq_T-E3r-hF_-VdlmFxjV6lZfxzsnL6cNJYREKKqQeVv_b4PL2rkqrHLKwT4pjLb_RCIq6QfnZnQAz5cTw7_0G00)
 
-    U->>F: Crée une annonce
-    F->>A: POST /api/annonces + Bearer token
-    A->>A: Vérification JWT (middleware auth)
-    A->>DB: INSERT INTO annonces
-    DB-->>A: Annonce créée
-    A-->>F: 201 {annonce}
-    F->>F: Affiche la nouvelle annonce
+<details>
+<summary>📝 Code source PlantUML</summary>
+
+```plantuml
+@startuml
+skinparam shadowing false
+skinparam sequenceArrowThickness 2
+skinparam participantPadding 20
+
+actor Utilisateur as U
+participant "Front-end\n(HTML/JS)" as F
+participant "API Express\n(Node.js)" as A
+participant "Middleware\n(auth.js)" as M
+participant "Service\n(authService)" as S
+database "MySQL" as DB
+
+== Inscription ==
+
+U -> F : Remplit formulaire inscription
+F -> A : POST /api/auth/signup\n{username, email, password}
+A -> A : Validation\n(express-validator)
+A -> S : signup(body)
+S -> DB : SELECT * FROM users\nWHERE email = ?
+DB --> S : null (disponible)
+S -> S : bcrypt.hash(password, 10)
+S -> DB : INSERT INTO users
+DB --> S : User créé
+S -> S : jwt.sign({id, email, role})
+S --> A : {user, token}
+A --> F : **201** {user, token}
+F -> F : localStorage.setItem('token')
+
+== Création d'annonce ==
+
+U -> F : Remplit formulaire annonce
+F -> A : POST /api/annonces\n+ Header: Bearer <token>
+A -> M : Vérification JWT
+M -> M : jwt.verify(token)
+M --> A : req.user = {id, role}
+A -> S : create(body, userId)
+S -> DB : INSERT INTO annonces
+DB --> S : Annonce créée
+S --> A : annonce (avec user + category)
+A --> F : **201** {annonce}
+F -> F : Affiche nouvelle annonce
+
+@enduml
 ```
 
-### Schéma relationnel
-
-```
-┌──────────────┐       ┌──────────────────┐       ┌──────────────┐
-│     User     │       │     Annonce      │       │   Category   │
-├──────────────┤       ├──────────────────┤       ├──────────────┤
-│ id       PK  │──┐    │ id           PK  │    ┌──│ id       PK  │
-│ username     │  │    │ title            │    │  │ name         │
-│ email        │  │    │ description      │    │  │ description  │
-│ password     │  ├───>│ price            │<───┘  │ createdAt    │
-│ role         │  │    │ location         │       │ updatedAt    │
-│ createdAt    │  │    │ status           │       └──────────────┘
-│ updatedAt    │  │    │ userId       FK  │
-└──────────────┘  │    │ categoryId   FK  │
-                  │    │ createdAt        │
-                  │    │ updatedAt        │
-                  │    └──────────────────┘
-                  │
-                  └── 1-N : User hasMany Annonces
-                      1-N : Category hasMany Annonces
-```
+</details>
 
 ---
 
